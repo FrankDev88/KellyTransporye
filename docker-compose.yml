@@ -1,0 +1,23 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: transportation_postgres
+    restart: always
+    env_file:
+      - .env
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    ports:
+      - "${POSTGRES_PORT}:5432"
+    volumes:
+      # Volumen nombrado para persistencia de datos
+      - postgres_data:/var/lib/postgresql/data
+      # Script de inicialización: se ejecuta solo la primera vez que arranca el contenedor vacío
+      - ./bd.sql:/docker-entrypoint-initdb.d/init.sql
+
+volumes:
+  postgres_data:
