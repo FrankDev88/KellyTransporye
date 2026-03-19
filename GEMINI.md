@@ -84,6 +84,7 @@ src/
 1. **Analiza antes de actuar:** Antes de escribir código, verifica en qué capa de la Clean Architecture debe residir la lógica.
 2. **Prioriza tipos:** Define siempre las interfaces o DTOs antes de implementar la función.
 3. **No dupliques lógica:** Si algo puede ser un Value Object en el dominio, no lo valides solo en el formulario.
+4. **Rama de Trabajo:** Todo el desarrollo colaborativo debe realizarse exclusivamente en la rama `AI`. Nunca realices commits directos a `main` a menos que se solicite explícitamente para un release.
 
 
 
