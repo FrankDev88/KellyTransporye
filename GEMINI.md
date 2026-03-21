@@ -54,38 +54,52 @@ Eres un experto en arquitectura de software y desarrollo Fullstack. Tu objetivo 
 ## 🎨 Guía de Estilo y Convenciones
 
 - **Componentes:** Usa la estructura de Shadcn. Si un componente crece mucho, divídelo en `molecule` o `organism`.
+- **Patrón de Diseño UI (Composition Pattern):** Utiliza siempre el patrón de composición al crear nuevos componentes en React. Evita pasar decenas de propiedades (prop drilling); en su lugar, utiliza `children` y subcomponentes (ej. `<Card><CardHeader/></Card>`) para maximizar la flexibilidad, accesibilidad y reusabilidad.
 - **Naming:** - Interfaces: `User`, no `IUser`.
   - Types: `UserResponse`.
   - Commands: `CreateUserCommand`.
   - Handlers: `CreateUserHandler`.
 - **Errores:** Manejo de errores mediante un wrapper (tipo `Either` o `Result`) para evitar el uso excesivo de Try/Catch en las capas superiores.
 
----
+## 📂 Estructura de Carpetas (Clean Architecture)
 
-## 📂 Estructura de Carpetas Sugerida
+### Frontend (React)
 
-### Frontend
-src/
-  core/ (Domain & Use Cases)
-  infrastructure/ (API Clients, Repositories implementations)
-  presentation/ (Components, Pages, Hooks, Zustand stores)
+├── domain/               # 1. Capa de Dominio (Independiente de React)
+│   ├── models/           # Interfaces y tipos de TypeScript (ej. User.ts, Result.ts)
+│   ├── schemas/          # Esquemas de validación con Zod (ej. userSchema.ts)
+│   ├── errors/           # Clases de errores personalizados
+│   └── repositories/     # Interfaces de repositorios (Contratos)
+│
+├── infrastructure/       # 2. Capa de Infraestructura (Servicios externos)
+│   ├── api/              # Configuración de Fetch o Axios (ej. axios.ts)
+│   ├── repositories/     # Implementaciones que llaman a la API (ej. AxiosAuthRepository.ts)
+│   └── dtos/             # Data Transfer Objects
+│
+├── application/          # 3. Capa de Aplicación (Casos de uso y Estado)
+│   ├── use-cases/        # Orquestación de lógica de negocio (ej. LoginUseCase.ts)
+│   ├── queries/          # Hooks de TanStack React Query (Estado del Servidor de feching de datos)
+│   │   └── 
+│   └── store/            # Zustand (Estado global de la UI)
+│       └── useAuthStore.ts
 
-### Backend
+```
+
+### Backend (NestJS)
+```text
 src/
   modules/[module-name]/
     domain/ (Entities, Repository Interfaces)
     application/ (Commands, Queries, Handlers)
     infrastructure/ (Persistence, External Services)
     presentation/ (Controllers, DTOs)
-
----
+```
 
 ## 🚦 Instrucciones para el Agente (Gemini)
 1. **Analiza antes de actuar:** Antes de escribir código, verifica en qué capa de la Clean Architecture debe residir la lógica.
 2. **Prioriza tipos:** Define siempre las interfaces o DTOs antes de implementar la función.
 3. **No dupliques lógica:** Si algo puede ser un Value Object en el dominio, no lo valides solo en el formulario.
 4. **Rama de Trabajo:** Todo el desarrollo colaborativo debe realizarse exclusivamente en la rama `AI`. Nunca realices commits directos a `main` a menos que se solicite explícitamente para un release.
-
 
 
 ## 🧠 Lógica de Negocio y Protocolos de Seguridad

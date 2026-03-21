@@ -14,7 +14,7 @@ import { TypeOrmAttendanceLogEntity } from './modules/transportation/infrastruct
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      envFilePath: '../.env',
+      envFilePath: '.env',
     }),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],

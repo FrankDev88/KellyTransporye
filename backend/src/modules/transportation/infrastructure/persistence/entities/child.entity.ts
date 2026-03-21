@@ -34,14 +34,13 @@ export class TypeOrmChildEntity {
   @Column({ name: 'home_lat_long', type: 'point' })
   homeLatLong: string | { x: number; y: number };
 
+  @Column({
+    type: 'enum',
+    enum: ChildStatus,
+    default: ChildStatus.PENDING,
+  })
+  status: ChildStatus;
+
   @Column({ name: 'is_active', type: 'boolean', default: true })
   isActive: boolean;
-
-  // We need to store status, wait, the bd.sql doesn't have status in children table!
-  // Let's check bd.sql. It says: `is_active BOOLEAN`. Status is mostly derived or stored in memory?
-  // No, `status` is in `attendance_logs`, wait, how does Child know its status?
-  // If `ChildStatus` is just current state during a route, maybe it's computed or we need to add it to the table?
-  // The domain entity `Child` has `status: ChildStatus`. If it's not in DB, I'll add it as a column just in case, or maybe it should be added to bd.sql? Let's assume it's added.
-  @Column({ type: 'varchar', nullable: true })
-  status: ChildStatus;
 }

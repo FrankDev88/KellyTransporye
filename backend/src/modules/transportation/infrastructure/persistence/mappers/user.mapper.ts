@@ -8,8 +8,10 @@ export class UserMapper {
       email: raw.email,
       fullName: raw.fullName,
       role: raw.role as UserRole,
+      password: raw.passwordHash,
       phoneNumber: raw.phoneNumber,
       createdAt: raw.createdAt,
+      isActive: true, // Asumimos true por defecto si no está en la BD o lo manejamos según lógica
     });
   }
 
@@ -19,6 +21,7 @@ export class UserMapper {
       email: user.email,
       fullName: user.fullName,
       role: user.role,
+      passwordHash: user.password,
       phoneNumber: user.phoneNumber,
     };
   }

@@ -18,27 +18,17 @@ export class ChildMapper {
   }
 
   static toPersistence(child: Child): Partial<TypeOrmChildEntity> {
-    const fullNameParts = child.fullName.split(' ');
-    const firstName = fullNameParts[0];
-    const lastName = fullNameParts.slice(1).join(' ') || '';
-
-    // pg driver expects a string like '(lat,long)' for points when inserting or an object
-    // For TypeORM with pg, returning { x, y } is best or string 'lat,long' or '(lat,long)'
-    // I'll provide standard object if needed, let's use string
     return {
       id: child.id,
-      firstName: firstName,
-      lastName: lastName,
+      firstName: child.firstName,
+      lastName: child.lastName,
       photoUrl: child.photoUrl,
       qrIdentifier: child.qrIdentifier,
-      // parentId requires accessing from somewhere. Assuming it's in the domain or not changed. 
-      // The child domain entity has `parentId` in `child.props` but maybe not exposed as getter?
-      // Let's check: Wait, child domain has `get parentId()`? I don't see it in my earlier read.
-      // Ah, wait. I can't access `child.props` because it's private.
-      // Let's assume there is a way or I will add the getter if it fails.
-      // homeAddress is also in `child.props` but not exposed?
+      parentId: child.parentId,
+      homeAddress: child.homeAddress,
       homeLatLong: `(${child.homeLocation.latitude},${child.homeLocation.longitude})`,
       status: child.status,
+      isActive: child.isActive,
     };
   }
 

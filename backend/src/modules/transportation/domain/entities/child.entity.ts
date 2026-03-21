@@ -1,3 +1,5 @@
+import { randomUUID } from 'crypto';
+
 export enum ChildStatus {
   PENDING = 'PENDING',
   ON_BOARD = 'ON_BOARD',
@@ -29,13 +31,40 @@ export class Child {
 
   // Getters para acceder a las propiedades
   get id(): string { return this.props.id; }
+  get firstName(): string { return this.props.firstName; }
+  get lastName(): string { return this.props.lastName; }
   get fullName(): string { return `${this.props.firstName} ${this.props.lastName}`; }
+  get parentId(): string { return this.props.parentId; }
+  get homeAddress(): string { return this.props.homeAddress; }
   get status(): ChildStatus { return this.props.status; }
   get qrIdentifier(): string { return this.props.qrIdentifier; }
   get homeLocation(): GpsPoint { return this.props.homeLocation; }
   get photoUrl(): string | undefined { return this.props.photoUrl; }
+  get isActive(): boolean { return this.props.isActive; }
 
   // --- Reglas de Negocio (Domain Logic) ---
+
+  /**
+   * Método de fábrica para crear un nuevo niño con validaciones iniciales.
+   */
+  static create(props: Omit<ChildProps, 'id' | 'status' | 'isActive'>): Child {
+    if (!props.firstName || !props.lastName) {
+      throw new Error('El nombre y el apellido son obligatorios.');
+    }
+    if (!props.parentId) {
+      throw new Error('El ID del padre es obligatorio.');
+    }
+    if (!props.qrIdentifier) {
+      throw new Error('El identificador de QR es obligatorio para el gafete físico.');
+    }
+
+    return new Child({
+      id: randomUUID(), // Usando crypto de Node para generar el ID inicial
+      ...props,
+      status: ChildStatus.PENDING,
+      isActive: true,
+    });
+  }
 
   /**
    * Cambia el estado a ON_BOARD tras un escaneo de QR o Check-in manual.
