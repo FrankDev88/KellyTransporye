@@ -35,6 +35,7 @@ import { CreateRouteTemplateHandler } from './application/route/handlers/create-
 import { CreateTripHandler } from './application/route/handlers/create-trip.handler';
 import { GenerateDailyTripsHandler } from './application/route/handlers/generate-daily-trips.handler';
 import { CreateUserHandler } from './application/user/handlers/create-user.handler';
+import { GetAllUsersHandler } from './application/user/handlers/get-all-users.handler';
 import { LoginHandler } from './application/auth/handlers/login.handler';
 
 // Presentación (Controladores)
@@ -86,6 +87,7 @@ const ApplicationHandlers = [
   CreateTripHandler,
   GenerateDailyTripsHandler,
   CreateUserHandler,
+  GetAllUsersHandler,
   LoginHandler,
 ];
 

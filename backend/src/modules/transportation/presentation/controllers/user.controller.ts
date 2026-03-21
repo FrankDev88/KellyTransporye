@@ -1,14 +1,43 @@
-import { Body, Controller, Post, Res, HttpStatus } from '@nestjs/common';
-import { CommandBus } from '@nestjs/cqrs';
+import { Body, Controller, Post, Res, HttpStatus, Get } from '@nestjs/common';
+import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { ApiTags, ApiOperation, ApiResponse, ApiBody, ApiBearerAuth } from '@nestjs/swagger';
 import { CreateUserDto } from '../dtos/user.dto';
 import { CreateUserCommand } from '../../application/user/commands/create-user.command';
+import { GetAllUsersQuery } from '../../application/user/queries/get-all-users.query';
 import { Response } from 'express';
 
 @ApiTags('Users Management')
 @Controller('users')
 export class UserController {
-  constructor(private readonly commandBus: CommandBus) {}
+  constructor(
+    private readonly commandBus: CommandBus,
+    private readonly queryBus: QueryBus
+  ) {}
+
+  @Get()
+  @ApiBearerAuth('JWT-auth')
+  @ApiOperation({ 
+    summary: 'Obtener lista de todos los usuarios registrados',
+    description: '🔐 **Roles Permitidos:** `ADMIN`'
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Lista de usuarios recuperada exitosamente.',
+  })
+  async getUsers(@Res() res: Response) {
+    const result = await this.queryBus.execute(new GetAllUsersQuery());
+
+    if (result.isFailure) {
+      return res.status(HttpStatus.BAD_REQUEST).json({
+        message: result.error || 'Error al obtener usuarios.',
+      });
+    }
+
+    return res.status(HttpStatus.OK).json({
+      success: true,
+      data: result.getValue(),
+    });
+  }
 
   @Post()
   @ApiBearerAuth('JWT-auth')

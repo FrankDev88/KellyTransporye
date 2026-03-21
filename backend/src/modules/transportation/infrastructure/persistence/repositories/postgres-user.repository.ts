@@ -23,6 +23,11 @@ export class PostgresUserRepository implements UserRepository {
     return raw ? UserMapper.toDomain(raw) : null;
   }
 
+  async findAll(): Promise<User[]> {
+    const raws = await this.manager.find(TypeOrmUserEntity);
+    return raws.map(raw => UserMapper.toDomain(raw));
+  }
+
   async save(user: User): Promise<void> {
     const persistenceData = UserMapper.toPersistence(user);
     await this.manager.save(TypeOrmUserEntity, persistenceData);
