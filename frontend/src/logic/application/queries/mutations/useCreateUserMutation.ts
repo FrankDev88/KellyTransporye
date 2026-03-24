@@ -1,13 +1,10 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { CreateUserUseCase } from "../../use-cases/CreateUserUseCase";
-import { AxiosUserRepository } from "../../../infrastructure/repositories/AxiosUserRepository";
 import type { CreateUserCredentials } from "../../../domain/schemas/userSchema";
 import { toast } from "sonner";
-
-const userRepository = new AxiosUserRepository();
-const createUserUseCase = new CreateUserUseCase(userRepository);
+import { useDependencies } from "../../../DependenciesContext";
 
 export const useCreateUserMutation = () => {
+  const { createUserUseCase } = useDependencies();
   const queryClient = useQueryClient();
 
   return useMutation({

@@ -4,7 +4,8 @@ export interface ChildRepository {
   findById(id: string): Promise<Child | null>;
   findByQr(qrIdentifier: string): Promise<Child | null>;
   save(child: Child): Promise<void>;
-  
+  findAll(): Promise<Child[]>;
+
   /**
    * Obtiene la lista de niños filtrados por su estado actual.
    * Útil para conductores que ven la lista de "PENDING" para Check-in manual.

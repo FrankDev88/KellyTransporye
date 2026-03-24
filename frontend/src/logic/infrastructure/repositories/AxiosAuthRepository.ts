@@ -7,18 +7,21 @@ import { api } from "../api/axios";
 export class AxiosAuthRepository implements AuthRepository {
   async login(credentials: LoginCredentials): Promise<Result<User>> {
     try {
-      const response = await api.post<{ data: User; token: string }>("/auth/login", credentials);
-      const user = response.data.data;
-      const token = response.data.token;
+      // Backend returns: { accessToken: string, user: { id, email, role, fullName } }
+      const response = await api.post<{ accessToken: string; user: User }>(
+        "/auth/login",
+        credentials
+      );
+      const user = response.data.user;
+      const token = response.data.accessToken;
 
       if (token) {
         localStorage.setItem("auth_token", token);
-        user.token = token;
       }
 
       return Result.ok(user);
     } catch (error: any) {
-      const message = error.response?.data?.message || "Error during login";
+      const message = error.response?.data?.message || "Credenciales inválidas.";
       return Result.fail(message);
     }
   }

@@ -20,6 +20,8 @@ import { PostgresRouteTemplateRepository } from './infrastructure/persistence/re
 import { PostgresTripRepository } from './infrastructure/persistence/repositories/postgres-trip.repository';
 import { PostgresAttendanceLogRepository } from './infrastructure/persistence/repositories/postgres-attendance-log.repository';
 import { JwtStrategy } from './infrastructure/auth/jwt.strategy';
+import { JwtAuthGuard } from './infrastructure/auth/jwt-auth.guard';
+import { APP_GUARD } from '@nestjs/core';
 
 // Aplicación (Handlers)
 import { ScanQrAttendanceHandler } from './application/attendance/handlers/scan-qr-attendance.handler';
@@ -28,6 +30,7 @@ import { CheckOutAttendanceHandler } from './application/attendance/handlers/che
 import { RegisterManualCheckOutHandler } from './application/attendance/handlers/register-manual-check-out.handler';
 import { ConfirmAbsenceHandler } from './application/child/handlers/confirm-absence.handler';
 import { CreateChildHandler } from './application/child/handlers/create-child.handler';
+import { GetAllChildrenHandler } from './application/child/handlers/get-all-children.handler';
 import { StartTripHandler } from './application/route/handlers/start-trip.handler';
 import { GetTripStopsHandler } from './application/route/handlers/get-trip-stops.handler';
 import { GetAllTripsHandler } from './application/route/handlers/get-all-trips.handler';
@@ -71,6 +74,10 @@ const InfrastructureProviders: Provider[] = [
     useClass: PostgresUnitOfWork,
   },
   JwtStrategy,
+  {
+    provide: APP_GUARD,
+    useClass: JwtAuthGuard,
+  },
 ];
 
 const ApplicationHandlers = [
@@ -80,6 +87,7 @@ const ApplicationHandlers = [
   RegisterManualCheckOutHandler,
   ConfirmAbsenceHandler,
   CreateChildHandler,
+  GetAllChildrenHandler,
   StartTripHandler,
   GetTripStopsHandler,
   GetAllTripsHandler,
@@ -110,4 +118,4 @@ const ApplicationHandlers = [
     ...ApplicationHandlers,
   ],
 })
-export class TransportationModule {}
+export class TransportationModule { }

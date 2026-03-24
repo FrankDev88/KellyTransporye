@@ -1,12 +1,13 @@
 import { useQuery } from "@tanstack/react-query";
-import { AxiosUserRepository } from "@/logic/infrastructure/repositories/AxiosUserRepository";
 import { toast } from "sonner";
-
-const userRepository = new AxiosUserRepository();
+import { useDependencies } from "../../DependenciesContext";
 
 export const useUsersQuery = () => {
+  const { userRepository } = useDependencies();
+
   return useQuery({
     queryKey: ["users"],
+    retry: false,
     queryFn: async () => {
       const result = await userRepository.getUsers();
       if (result.isFailure) {

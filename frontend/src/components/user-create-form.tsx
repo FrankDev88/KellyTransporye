@@ -4,10 +4,16 @@ import { createUserSchema, type CreateUserCredentials, UserRole } from "@/logic/
 import { useCreateUserMutation } from "@/logic/application/queries/mutations/useCreateUserMutation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import {
+  Field,
+  FieldError,
+  FieldGroup,
+  FieldLabel,
+} from "@/components/ui/field";
 import {
   Select,
   SelectContent,
+  SelectGroup,
   SelectItem,
   SelectTrigger,
   SelectValue,
@@ -49,80 +55,74 @@ export function UserCreateForm({ onSuccess }: UserCreateFormProps) {
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 py-4">
-      <div className="grid gap-2">
-        <Label htmlFor="fullName">Nombre Completo</Label>
-        <Input
-          id="fullName"
-          placeholder="Juan Pérez"
-          {...register("fullName")}
-        />
-        {errors.fullName && (
-          <p className="text-sm text-destructive">{errors.fullName.message}</p>
-        )}
-      </div>
+    <form onSubmit={handleSubmit(onSubmit)} className="py-4">
+      <FieldGroup>
+        <Field>
+          <FieldLabel htmlFor="fullName">Nombre Completo</FieldLabel>
+          <Input
+            id="fullName"
+            placeholder="Juan Pérez"
+            {...register("fullName")}
+          />
+          <FieldError errors={[errors.fullName]} />
+        </Field>
 
-      <div className="grid gap-2">
-        <Label htmlFor="email">Correo Electrónico</Label>
-        <Input
-          id="email"
-          type="email"
-          placeholder="juan.perez@example.com"
-          {...register("email")}
-        />
-        {errors.email && (
-          <p className="text-sm text-destructive">{errors.email.message}</p>
-        )}
-      </div>
+        <Field>
+          <FieldLabel htmlFor="email">Correo Electrónico</FieldLabel>
+          <Input
+            id="email"
+            type="email"
+            placeholder="juan.perez@example.com"
+            {...register("email")}
+          />
+          <FieldError errors={[errors.email]} />
+        </Field>
 
-      <div className="grid gap-2">
-        <Label htmlFor="password">Contraseña</Label>
-        <Input
-          id="password"
-          type="password"
-          {...register("password")}
-        />
-        {errors.password && (
-          <p className="text-sm text-destructive">{errors.password.message}</p>
-        )}
-      </div>
+        <Field>
+          <FieldLabel htmlFor="password">Contraseña</FieldLabel>
+          <Input
+            id="password"
+            type="password"
+            {...register("password")}
+          />
+          <FieldError errors={[errors.password]} />
+        </Field>
 
-      <div className="grid gap-2">
-        <Label htmlFor="role">Rol de Usuario</Label>
-        <Select
-          onValueChange={(value) => setValue("role", value as UserRole)}
-          defaultValue={selectedRole}
-        >
-          <SelectTrigger id="role">
-            <SelectValue placeholder="Selecciona un rol" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value={UserRole.ADMIN}>Administrador</SelectItem>
-            <SelectItem value={UserRole.DRIVER}>Conductor</SelectItem>
-            <SelectItem value={UserRole.PARENT}>Padre de Familia</SelectItem>
-          </SelectContent>
-        </Select>
-        {errors.role && (
-          <p className="text-sm text-destructive">{errors.role.message}</p>
-        )}
-      </div>
+        <Field>
+          <FieldLabel htmlFor="role">Rol de Usuario</FieldLabel>
+          <Select
+            onValueChange={(value) => setValue("role", value as UserRole)}
+            value={selectedRole}
+          >
+            <SelectTrigger id="role" className="w-full h-9">
+              <SelectValue placeholder="Selecciona un rol" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectGroup>
+                <SelectItem value={UserRole.ADMIN}>Administrador</SelectItem>
+                <SelectItem value={UserRole.DRIVER}>Conductor</SelectItem>
+                <SelectItem value={UserRole.PARENT}>Padre de Familia</SelectItem>
+              </SelectGroup>
+            </SelectContent>
+          </Select>
+          <FieldError errors={[errors.role]} />
+        </Field>
 
-      <div className="grid gap-2">
-        <Label htmlFor="phoneNumber">Teléfono (Opcional)</Label>
-        <Input
-          id="phoneNumber"
-          placeholder="+52 55..."
-          {...register("phoneNumber")}
-        />
-        {errors.phoneNumber && (
-          <p className="text-sm text-destructive">{errors.phoneNumber.message}</p>
-        )}
-      </div>
+        <Field>
+          <FieldLabel htmlFor="phoneNumber">Teléfono (Opcional)</FieldLabel>
+          <Input
+            id="phoneNumber"
+            placeholder="+52 55..."
+            {...register("phoneNumber")}
+          />
+          <FieldError errors={[errors.phoneNumber]} />
+        </Field>
 
-      <Button type="submit" disabled={isPending} className="w-full">
-        {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-        Crear Usuario
-      </Button>
+        <Button type="submit" disabled={isPending} className="w-full">
+          {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+          Crear Usuario
+        </Button>
+      </FieldGroup>
     </form>
   );
 }

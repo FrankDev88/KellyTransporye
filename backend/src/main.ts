@@ -48,8 +48,15 @@ async function bootstrap() {
       docExpansion: 'list',
       filter: true,
       showRequestDuration: true,
+      persistAuthorization: true,   // 🔑 El JWT se mantiene al recargar la página
+      tryItOutEnabled: true,         // 🚀 Todos los endpoints se pueden probar directamente
     },
     customSiteTitle: 'Documentación API Transporte',
+    customCss: `
+      .swagger-ui .topbar { background-color: #1e293b; }
+      .swagger-ui .topbar-wrapper .link { display: none; }
+      .swagger-ui .info .title { color: #1e293b; }
+    `,
   });
 
   await app.listen(process.env.PORT ?? 3000);

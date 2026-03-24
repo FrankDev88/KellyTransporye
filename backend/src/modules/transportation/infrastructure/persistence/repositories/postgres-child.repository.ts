@@ -7,7 +7,7 @@ import { TypeOrmChildEntity } from '../entities/child.entity';
 
 @Injectable()
 export class PostgresChildRepository implements ChildRepository {
-  constructor(private readonly dataSource: DataSource, private readonly txManager?: EntityManager) {}
+  constructor(private readonly dataSource: DataSource, private readonly txManager?: EntityManager) { }
 
   private get manager(): EntityManager {
     return this.txManager || this.dataSource.manager;
@@ -23,9 +23,18 @@ export class PostgresChildRepository implements ChildRepository {
     return raw ? ChildMapper.toDomain(raw) : null;
   }
 
-  async findByStatus(status: ChildStatus): Promise<Child[]> {
-    const rawList = await this.manager.find(TypeOrmChildEntity, { where: { status } });
+  async findAll(): Promise<Child[]> {
+    const rawList = await this.manager.find(TypeOrmChildEntity);
     return rawList.map(raw => ChildMapper.toDomain(raw));
+  }
+
+  async findByStatus(status: ChildStatus): Promise<Child[]> {
+    // 'status' is not stored in the children table (it comes from attendance_logs).
+    // The domain mapper defaults all children to PENDING, so we fetch all active
+    // children and filter in-memory to satisfy the interface contract.
+    const rawList = await this.manager.find(TypeOrmChildEntity, { where: { isActive: true } });
+    const all = rawList.map(raw => ChildMapper.toDomain(raw));
+    return all.filter(child => child.status === status);
   }
 
   async findByParent(parentId: string): Promise<Child[]> {

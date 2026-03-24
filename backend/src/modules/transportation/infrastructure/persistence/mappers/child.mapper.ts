@@ -12,7 +12,8 @@ export class ChildMapper {
       parentId: raw.parentId,
       homeAddress: raw.homeAddress,
       homeLocation: this.mapPointToGpsPoint(raw.homeLatLong),
-      status: raw.status as ChildStatus,
+      // status is not stored in the children table; default to PENDING
+      status: ChildStatus.PENDING,
       isActive: raw.isActive,
     });
   }
@@ -27,7 +28,6 @@ export class ChildMapper {
       parentId: child.parentId,
       homeAddress: child.homeAddress,
       homeLatLong: `(${child.homeLocation.latitude},${child.homeLocation.longitude})`,
-      status: child.status,
       isActive: child.isActive,
     };
   }

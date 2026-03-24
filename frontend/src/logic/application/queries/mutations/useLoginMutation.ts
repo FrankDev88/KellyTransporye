@@ -1,15 +1,12 @@
 import { useMutation } from "@tanstack/react-query";
-import { LoginUseCase } from "../../use-cases/LoginUseCase";
-import { AxiosAuthRepository } from "../../../infrastructure/repositories/AxiosAuthRepository";
 import type { LoginCredentials } from "../../../domain/schemas/authSchema";
 import { useAuthStore } from "../../store/useAuthStore";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
-
-const authRepository = new AxiosAuthRepository();
-const loginUseCase = new LoginUseCase(authRepository);
+import { useDependencies } from "../../../DependenciesContext";
 
 export const useLoginMutation = () => {
+  const { loginUseCase } = useDependencies();
   const setUser = useAuthStore((state) => state.setUser);
   const navigate = useNavigate();
 

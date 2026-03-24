@@ -4,14 +4,16 @@ import { ApiTags, ApiOperation, ApiResponse, ApiBody, ApiBearerAuth } from '@nes
 import { LoginDto } from '../dtos/auth.dto';
 import { LoginCommand } from '../../application/auth/commands/login.command';
 import { Response } from 'express';
+import { Public } from '../../infrastructure/auth/public.decorator';
 
 @ApiTags('Authentication')
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly commandBus: CommandBus) {}
+  constructor(private readonly commandBus: CommandBus) { }
 
   @Post('login')
-  @ApiOperation({ 
+  @Public()
+  @ApiOperation({
     summary: 'Iniciar sesión y obtener token JWT',
     description: 'Valida las credenciales del usuario (email y password) y retorna un Access Token (JWT) válido por 24 horas para acceder a los endpoints protegidos.'
   })
@@ -54,7 +56,7 @@ export class AuthController {
 
   @Post('logout')
   @ApiBearerAuth('JWT-auth')
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Cerrar sesión (Invalidación por parte del cliente)',
     description: '🔐 **Roles Permitidos:** `ADMIN`, `DRIVER`, `PARENT`\n\nEndpoint informativo para marcar el fin de la sesión. El cliente debe eliminar el token localmente.'
   })

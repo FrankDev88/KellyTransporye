@@ -1,10 +1,9 @@
-import { Entity, Column, PrimaryGeneratedColumn, ManyToOne, JoinColumn } from 'typeorm';
-import { ChildStatus } from '../../../domain/entities/child.entity';
+import { Entity, Column, PrimaryColumn, ManyToOne, JoinColumn } from 'typeorm';
 import { TypeOrmUserEntity } from './user.entity';
 
 @Entity('children')
 export class TypeOrmChildEntity {
-  @PrimaryGeneratedColumn('uuid')
+  @PrimaryColumn({ type: 'uuid' })
   id: string;
 
   @Column({ name: 'first_name', type: 'text' })
@@ -29,17 +28,9 @@ export class TypeOrmChildEntity {
   @Column({ name: 'home_address', type: 'text' })
   homeAddress: string;
 
-  // TypeORM point type maps to string "(x,y)" or object depending on driver.
   // pg driver returns objects for point { x, y }
   @Column({ name: 'home_lat_long', type: 'point' })
   homeLatLong: string | { x: number; y: number };
-
-  @Column({
-    type: 'enum',
-    enum: ChildStatus,
-    default: ChildStatus.PENDING,
-  })
-  status: ChildStatus;
 
   @Column({ name: 'is_active', type: 'boolean', default: true })
   isActive: boolean;

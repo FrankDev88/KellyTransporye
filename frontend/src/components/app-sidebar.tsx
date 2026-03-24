@@ -1,10 +1,7 @@
-"use client"
-
 import * as React from "react"
 
 import { NavMain } from "@/components/nav-main"
 import { NavUser } from "@/components/nav-user"
-import { Link } from "react-router-dom"
 import {
   Sidebar,
   SidebarContent,
@@ -13,66 +10,101 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarRail,
 } from "@/components/ui/sidebar"
 import {
   LayoutDashboardIcon,
-  CalendarCheckIcon,
-  BusIcon,
+  ListIcon,
   UsersIcon,
-  BabyIcon,
+  FileChartColumnIcon,
+  Settings2Icon,
+  GraduationCapIcon,
+  BusIcon,
+  QrCodeIcon,
 } from "lucide-react"
 
 const data = {
   user: {
     name: "Administrador",
     email: "admin@transporte.com",
-    avatar: "/avatars/admin.jpg",
+    avatar: "",
   },
   navMain: [
     {
       title: "Dashboard",
       url: "/dashboard",
       icon: <LayoutDashboardIcon />,
+      items: [],
     },
     {
-      title: "Asistencia",
-      url: "/attendance",
-      icon: <CalendarCheckIcon />,
+      title: "Operación de Rutas",
+      url: "#",
+      icon: <ListIcon />,
+      isActive: true,
+      items: [
+        { title: "Plantillas de Ruta", url: "/routes" },
+        { title: "Viajes (Ejecución)", url: "/trips" },
+        { title: "Vista Conductor", url: "/driver/demo" },
+        { title: "Vehículos", url: "/vehicles" },
+      ],
     },
     {
-      title: "Rutas",
-      url: "/routes",
-      icon: <BusIcon />,
+      title: "Gestión Escolar",
+      url: "#",
+      icon: <GraduationCapIcon />,
+      items: [
+        { title: "Estudiantes", url: "/children" },
+      ],
     },
     {
-      title: "Niños",
-      url: "/children",
-      icon: <BabyIcon />,
+      title: "Gafetes QR",
+      url: "#",
+      icon: <QrCodeIcon />,
+      items: [
+        { title: "Generador de QR", url: "/qr/generator" },
+        { title: "Escáner QR", url: "/qr/scanner" },
+      ],
     },
     {
-      title: "Usuarios",
-      url: "/users",
+      title: "Administración",
+      url: "#",
       icon: <UsersIcon />,
+      items: [
+        { title: "Usuarios", url: "/users" },
+      ],
+    },
+    {
+      title: "Reportes",
+      url: "/reports",
+      icon: <FileChartColumnIcon />,
+      items: [],
+    },
+    {
+      title: "Configuración",
+      url: "/settings",
+      icon: <Settings2Icon />,
+      items: [],
     },
   ],
 }
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   return (
-    <Sidebar collapsible="offcanvas" {...props}>
+    <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton
-              className="data-[slot=sidebar-menu-button]:p-1.5!"
-              render={<Link to="/dashboard" />}
+              size="lg"
+              className="data-open:bg-sidebar-accent data-open:text-sidebar-accent-foreground"
+              render={<a href="/dashboard" />}
             >
-              <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-                <BusIcon className="size-5" />
+              <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
+                <BusIcon className="size-4" />
               </div>
-              <div className="flex flex-col gap-0.5 leading-none">
-                <span className="text-base font-semibold">BusControl</span>
-                <span className="text-xs text-muted-foreground font-normal">v1.0.0</span>
+              <div className="grid flex-1 text-left text-sm leading-tight">
+                <span className="truncate font-semibold">SistemaTransporte</span>
+                <span className="truncate text-xs text-muted-foreground">Panel Administrativo</span>
               </div>
             </SidebarMenuButton>
           </SidebarMenuItem>
@@ -84,6 +116,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       <SidebarFooter>
         <NavUser user={data.user} />
       </SidebarFooter>
+      <SidebarRail />
     </Sidebar>
   )
 }
