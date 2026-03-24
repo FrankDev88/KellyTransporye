@@ -218,12 +218,14 @@ function QrScannerPanel({ tripId, onManualCheckIn, onManualCheckOut }: {
         const startScanner = async () => {
             try {
                 scanner = new Html5Qrcode('qr-reader', { verbose: false });
+                
                 await scanner.start(
+                    
                     { facingMode: 'environment' },
                     {
                         fps: 10,
                         qrbox: { width: 250, height: 250 },
-                        aspectRatio: 1.0,
+                        aspectRatio: 1,
                     },
                     (decodedText) => {
                         if (isProcessingRef.current || !isComponentMounted) return;
@@ -245,6 +247,7 @@ function QrScannerPanel({ tripId, onManualCheckIn, onManualCheckOut }: {
                     },
                     () => { /* ignore */ }
                 );
+                
             } catch (err: any) {
                 if (isComponentMounted) {
                     setCameraError('Necesitas otorgar permisos de cámara para continuar.');
@@ -268,7 +271,7 @@ function QrScannerPanel({ tripId, onManualCheckIn, onManualCheckOut }: {
     return (
         <div className="flex flex-col gap-4 h-full">
             {/* Camera */}
-            <div className="relative overflow-hidden rounded-xl border flex-1 min-h-0 bg-muted/20 flex items-center justify-center">
+            <div className="relative overflow-hidden rounded-xl border flex-1 min-h-0 bg-neutral-700 flex items-center justify-center">
                 <div className="relative w-[300px] h-[300px] rounded-2xl overflow-hidden shadow-inner border-4 border-muted">
                     <div id="qr-reader" className="absolute inset-0 [&_video]:w-full [&_video]:h-full [&_video]:object-cover" />
                     
