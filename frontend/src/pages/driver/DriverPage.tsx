@@ -49,11 +49,13 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
 
-import { useTripStopsQuery } from '@/logic/application/queries/useTripStopsQuery';
 import { useCheckInMutation } from '@/logic/application/queries/mutations/useCheckInMutation';
 import { useCheckOutMutation } from '@/logic/application/queries/mutations/useCheckOutMutation';
 import { useManualCheckInMutation } from '@/logic/application/queries/mutations/useManualCheckInMutation';
+import { useTripStopsQuery } from '@/logic/application/queries/useTripStopsQuery';
+import { useTripsQuery } from '@/logic/application/queries/useTripsQuery';
 import { useAttendanceStore } from '@/logic/application/store/useAttendanceStore';
+import { useAuthStore } from '@/logic/application/store/useAuthStore';
 import type { TripStop } from '@/logic/domain/repositories/route.repository';
 
 // ─── Fix default Leaflet marker icons (Vite compatibility) ────────────────────
@@ -204,6 +206,7 @@ function QrScannerPanel({ tripId, onManualCheckIn, onManualCheckOut }: {
     onManualCheckIn: () => void;
     onManualCheckOut: () => void;
 }) {
+    const { user } = useAuthStore();
     const { setScanResult, scanResult } = useAttendanceStore();
     const { mutate: checkIn } = useCheckInMutation(tripId);
     const [cameraError, setCameraError] = React.useState<string | null>(null);
@@ -233,16 +236,39 @@ function QrScannerPanel({ tripId, onManualCheckIn, onManualCheckOut }: {
                         isProcessingRef.current = true; // Lock immediately
                         setScanResult(decodedText);
                         
-                        checkIn(
-                            { tripId, qrIdentifier: decodedText },
-                            {
-                                onSettled: () => {
-                                    setTimeout(() => {
-                                        setScanResult(null);
-                                        isProcessingRef.current = false; // Unlock after animation
-                                    }, 1500);
-                                }
-                            }
+                        if (!navigator.geolocation) {
+                            toast.error('GPS no disponible en este dispositivo.');
+                            isProcessingRef.current = false;
+                            setScanResult(null);
+                            return;
+                        }
+
+                        navigator.geolocation.getCurrentPosition(
+                            (pos) => {
+                                checkIn(
+                                    { 
+                                        tripId, 
+                                        qrIdentifier: decodedText,
+                                        driverId: user?.props.id || '',
+                                        latitude: pos.coords.latitude,
+                                        longitude: pos.coords.longitude
+                                    },
+                                    {
+                                        onSettled: () => {
+                                            setTimeout(() => {
+                                                setScanResult(null);
+                                                isProcessingRef.current = false; // Unlock after animation
+                                            }, 1500);
+                                        }
+                                    }
+                                );
+                            },
+                            () => {
+                                toast.error('No se pudo obtener la ubicación GPS.');
+                                isProcessingRef.current = false;
+                                setScanResult(null);
+                            },
+                            { timeout: 5000 }
                         );
                     },
                     () => { /* ignore */ }
@@ -331,6 +357,7 @@ function ManualCheckInDialog({
     tripId: string;
     pendingStops: TripStop[];
 }) {
+    const { user } = useAuthStore();
     const { mutate: manualCheckIn, isPending } = useManualCheckInMutation(tripId);
     const [childId, setChildId] = React.useState('');
     const [reason, setReason] = React.useState<'LOSS' | 'DAMAGE' | 'FORGOTTEN' | ''>('');
@@ -353,6 +380,7 @@ function ManualCheckInDialog({
                         reason: reason as 'LOSS' | 'DAMAGE' | 'FORGOTTEN',
                         latitude: pos.coords.latitude,
                         longitude: pos.coords.longitude,
+                        driverId: user?.props.id || '',
                     },
                     {
                         onSuccess: (r) => {
@@ -470,6 +498,7 @@ function ManualCheckOutDialog({
     tripId: string;
     onBoardStops: TripStop[];
 }) {
+    const { user } = useAuthStore();
     const { mutate: checkOut, isPending } = useCheckOutMutation(tripId);
     const [childId, setChildId] = React.useState('');
 
@@ -478,16 +507,33 @@ function ManualCheckOutDialog({
             toast.warning('Selecciona un niño.');
             return;
         }
-        checkOut(
-            { tripId, childId },
-            {
-                onSuccess: (r) => {
-                    if (r.isSuccess) {
-                        setChildId('');
-                        onOpenChange(false);
-                    }
-                },
+        if (!navigator.geolocation) {
+            toast.error('GPS no disponible en este dispositivo.');
+            return;
+        }
+
+        navigator.geolocation.getCurrentPosition(
+            (pos) => {
+                checkOut(
+                    { 
+                        tripId, 
+                        childId,
+                        latitude: pos.coords.latitude,
+                        longitude: pos.coords.longitude,
+                        driverId: user?.props.id || ''
+                    },
+                    {
+                        onSuccess: (r) => {
+                            if (r.isSuccess) {
+                                setChildId('');
+                                onOpenChange(false);
+                            }
+                        },
+                    },
+                );
             },
+            () => toast.error('No se pudo obtener la ubicación GPS.'),
+            { timeout: 5000 }
         );
     };
 
@@ -566,22 +612,66 @@ function ManualCheckOutDialog({
 export default function DriverPage() {
     const { tripId } = useParams<{ tripId: string }>();
     const navigate = useNavigate();
+    const { user } = useAuthStore();
     const {
         isManualCheckInOpen, setIsManualCheckInOpen,
         isManualCheckOutOpen, setIsManualCheckOutOpen,
     } = useAttendanceStore();
 
-    const { data: stops = [], isLoading, refetch } = useTripStopsQuery(tripId ?? '');
+    // Fetch all trips specifically to resolve tripId if absent or invalid
+    const { data: allTrips = [], isLoading: loadingTrips } = useTripsQuery();
+
+    const activeTripId = React.useMemo(() => {
+        const active = allTrips.find(t => t.props.isActive && t.props.driverId === user?.props.id);
+        return active?.props.id;
+    }, [allTrips, user]);
+
+    React.useEffect(() => {
+        if (loadingTrips || !user?.props.id) return;
+
+        if (activeTripId && tripId !== activeTripId) {
+             // Redirect to the assigned active trip
+             navigate(`/driver/${activeTripId}`, { replace: true });
+        } else if (!activeTripId && tripId) {
+             // If they typed something like "demo" but have no active trip, clear it out
+             navigate('/driver', { replace: true });
+        }
+    }, [tripId, loadingTrips, activeTripId, user, navigate]);
+
+    // This query is strictly enabled ONLY if the trip matches the active one
+    const isValidTrip = !!activeTripId && tripId === activeTripId;
+    const { data: stops = [], isLoading, refetch } = useTripStopsQuery(isValidTrip ? tripId : '');
 
     const pendingStops = stops.filter((s) => s.status === 'PENDING');
     const onBoardStops = stops.filter((s) => s.status === 'ON_BOARD');
     const completedCount = stops.filter((s) => s.status === 'COMPLETED').length;
     const absentCount = stops.filter((s) => s.status === 'ABSENCE_CONFIRMED').length;
 
-    if (!tripId) {
+    if (loadingTrips) {
         return (
-            <div className="flex h-screen items-center justify-center">
-                <p className="text-muted-foreground">ID de viaje no especificado.</p>
+            <div className="flex h-screen items-center justify-center bg-background">
+                <Skeleton className="size-16 rounded-full" />
+            </div>
+        );
+    }
+
+    if (!isValidTrip) {
+        return (
+            <div className="flex h-screen items-center justify-center bg-background flex-col gap-5 p-4 text-center">
+                <div className="flex size-24 items-center justify-center rounded-full bg-blue-500/10 border border-blue-500/20 shadow-sm animate-pulse">
+                    <BusIcon className="size-10 text-blue-500" />
+                </div>
+                <div>
+                    <h2 className="text-xl font-bold tracking-tight">Sin viaje activo</h2>
+                    <p className="mt-2 text-sm text-muted-foreground max-w-sm mx-auto">
+                        Actualmente no tienes asignado ningún viaje activo en transcurso. Por favor, 
+                        revisa la lista de viajes para iniciar tu próxima ruta.
+                    </p>
+                </div>
+                <Button onClick={() => navigate('/trips')} className="mt-4 gap-2 h-11 px-6 bg-primary hover:bg-primary/90 text-primary-foreground font-medium rounded-lg">
+                    <MapPinIcon className="size-4" />
+                    Ver mis viajes programados
+                </Button>
             </div>
         );
     }

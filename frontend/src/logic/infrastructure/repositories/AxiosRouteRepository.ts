@@ -69,7 +69,7 @@ export class AxiosRouteRepository implements RouteRepository {
 
     async checkIn(data: CheckInData): Promise<Result<{ message: string }>> {
         try {
-            const response = await api.post<{ message: string }>('/transportation/route/trip/check-in', data);
+            const response = await api.post<{ message: string }>('/transportation/attendance/scan', data);
             return Result.ok(response.data);
         } catch (error: any) {
             return Result.fail(error.response?.data?.message || 'Error al registrar el abordaje');
@@ -78,7 +78,7 @@ export class AxiosRouteRepository implements RouteRepository {
 
     async checkOut(data: CheckOutData): Promise<Result<{ message: string }>> {
         try {
-            const response = await api.post<{ message: string }>('/transportation/route/trip/check-out', data);
+            const response = await api.post<{ message: string }>('/transportation/attendance/checkout', data);
             return Result.ok(response.data);
         } catch (error: any) {
             return Result.fail(error.response?.data?.message || 'Error al registrar la entrega');
@@ -87,7 +87,7 @@ export class AxiosRouteRepository implements RouteRepository {
 
     async manualCheckIn(data: ManualCheckInData): Promise<Result<{ message: string }>> {
         try {
-            const response = await api.post<{ message: string }>('/transportation/route/trip/manual-check-in', data);
+            const response = await api.post<{ message: string }>('/transportation/attendance/manual', data);
             return Result.ok(response.data);
         } catch (error: any) {
             return Result.fail(error.response?.data?.message || 'Error al registrar abordaje manual');

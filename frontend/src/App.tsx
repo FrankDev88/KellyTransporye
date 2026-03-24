@@ -23,6 +23,7 @@ function App() {
           <Route path="/children" element={<ChildrenPage />} />
           <Route path="/routes" element={<RoutesPage />} />
           <Route path="/trips" element={<TripsPage />} />
+          <Route path="/driver" element={<DriverPage />} />
           <Route path="/driver/:tripId" element={<DriverPage />} />
           <Route path="/" element={<Navigate to="/login" replace />} />
         </Routes>

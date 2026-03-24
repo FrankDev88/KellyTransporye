@@ -32,12 +32,18 @@ export type GenerateDailyTripsData = z.infer<typeof generateDailyTripsSchema>;
 export const checkInSchema = z.object({
     tripId: z.string().uuid({ message: 'UUID de viaje requerido.' }),
     qrIdentifier: z.string().min(1, { message: 'El identificador QR es requerido.' }),
+    driverId: z.string().uuid({ message: 'UUID de conductor requerido.' }),
+    latitude: z.number(),
+    longitude: z.number(),
 });
 export type CheckInData = z.infer<typeof checkInSchema>;
 
 export const checkOutSchema = z.object({
     tripId: z.string().uuid({ message: 'UUID de viaje requerido.' }),
     childId: z.string().uuid({ message: 'UUID del niño requerido.' }),
+    driverId: z.string().uuid({ message: 'UUID de conductor requerido.' }),
+    latitude: z.number(),
+    longitude: z.number(),
 });
 export type CheckOutData = z.infer<typeof checkOutSchema>;
 
@@ -50,6 +56,7 @@ export const ManualCheckInReason = {
 export const manualCheckInSchema = z.object({
     tripId: z.string().uuid({ message: 'UUID de viaje requerido.' }),
     childId: z.string().uuid({ message: 'UUID del niño requerido.' }),
+    driverId: z.string().uuid({ message: 'UUID de conductor requerido.' }),
     reason: z.enum(['LOSS', 'DAMAGE', 'FORGOTTEN'], { message: 'Selecciona una razón.' }),
     latitude: z.number(),
     longitude: z.number(),
