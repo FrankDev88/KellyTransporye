@@ -3,6 +3,7 @@ import { z } from 'zod';
 export const createRouteTemplateSchema = z.object({
     name: z.string().min(3, { message: 'El nombre debe tener al menos 3 caracteres.' }),
     type: z.enum(['HOME_TO_SCHOOL', 'SCHOOL_TO_HOME'], { message: 'El tipo de ruta es requerido.' }),
+    defaultDriverId: z.string().uuid({ message: 'El ID debe ser un UUID válido.' }).optional().or(z.literal('')),
     estimatedDuration: z.string().optional(),
     childrenIds: z.array(z.string().uuid({ message: 'Cada ID debe ser un UUID válido.' }))
         .min(1, { message: 'Debes incluir al menos un niño en la ruta.' }),
@@ -11,8 +12,14 @@ export type CreateRouteTemplateData = z.infer<typeof createRouteTemplateSchema>;
 
 export const createTripSchema = z.object({
     templateId: z.string().uuid({ message: 'El ID de plantilla debe ser un UUID válido.' }),
-    driverId: z.string().uuid({ message: 'El ID del conductor debe ser un UUID válido.' }),
-    scheduledStart: z.string().datetime({ message: 'Ingresa una fecha ISO 8601 válida.' }).optional(),
+    driverId: z.string().uuid({ message: 'El ID del conductor debe ser un UUID válido.' }).optional().or(z.literal('')),
+    scheduledStart: z.string()
+        .min(1, { message: 'La fecha es requerida' })
+        .transform((val) => {
+            if (val.includes('T')) return val; // Ya es ISO
+            return `${val}T00:00:00.000Z`; // Agrega la hora cero para cumplir el datetime del backend
+        })
+        .optional(),
 });
 export type CreateTripData = z.infer<typeof createTripSchema>;
 
@@ -23,7 +30,12 @@ export const startTripSchema = z.object({
 export type StartTripData = z.infer<typeof startTripSchema>;
 
 export const generateDailyTripsSchema = z.object({
-    targetDate: z.string().datetime({ message: 'Ingresa una fecha ISO 8601 válida.' }),
+    targetDate: z.string()
+        .min(1, { message: 'La fecha es requerida' })
+        .transform((val) => {
+            if (val.includes('T')) return val;
+            return `${val}T00:00:00.000Z`;
+        }),
 });
 export type GenerateDailyTripsData = z.infer<typeof generateDailyTripsSchema>;
 

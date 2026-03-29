@@ -4,7 +4,7 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 const CreateTripSchema = z.object({
   templateId: z.string().uuid({ message: 'El ID de la plantilla debe ser un UUID válido.' }),
-  driverId: z.string().uuid({ message: 'El ID del conductor debe ser un UUID válido.' }),
+  driverId: z.string().uuid({ message: 'El ID del conductor debe ser un UUID válido.' }).optional(),
   scheduledStart: z.string().datetime({ message: 'La fecha programada debe tener un formato ISO 8601 válido.' }).optional(),
 });
 
@@ -16,12 +16,12 @@ export class CreateTripDto extends createZodDto(CreateTripSchema) {
   })
   templateId: string;
 
-  @ApiProperty({
-    description: 'ID del conductor (User con rol DRIVER) asignado al viaje',
+  @ApiPropertyOptional({
+    description: 'ID del conductor (User con rol DRIVER) asignado al viaje. Si se omite, se usa el de la plantilla.',
     example: 'dddd1111-1111-1111-1111-111111111111',
     format: 'uuid'
   })
-  driverId: string;
+  driverId?: string;
 
   @ApiPropertyOptional({
     description: 'Fecha y hora programada para el inicio del viaje',

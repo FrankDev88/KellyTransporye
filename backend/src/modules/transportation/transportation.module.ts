@@ -34,6 +34,7 @@ import { GetAllChildrenHandler } from './application/child/handlers/get-all-chil
 import { StartTripHandler } from './application/route/handlers/start-trip.handler';
 import { GetTripStopsHandler } from './application/route/handlers/get-trip-stops.handler';
 import { GetAllTripsHandler } from './application/route/handlers/get-all-trips.handler';
+import { GetAllRouteTemplatesHandler } from './application/route/handlers/get-all-route-templates.handler';
 import { CreateRouteTemplateHandler } from './application/route/handlers/create-route-template.handler';
 import { CreateTripHandler } from './application/route/handlers/create-trip.handler';
 import { GenerateDailyTripsHandler } from './application/route/handlers/generate-daily-trips.handler';
@@ -91,6 +92,7 @@ const ApplicationHandlers = [
   StartTripHandler,
   GetTripStopsHandler,
   GetAllTripsHandler,
+  GetAllRouteTemplatesHandler,
   CreateRouteTemplateHandler,
   CreateTripHandler,
   GenerateDailyTripsHandler,

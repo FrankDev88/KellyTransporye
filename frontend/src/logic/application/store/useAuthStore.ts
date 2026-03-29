@@ -2,9 +2,9 @@ import { create } from "zustand";
 import type { User } from "../../domain/models/User";
 
 interface AuthState {
-  user: User | null;
+  user: User["props"] | null;
   isAuthenticated: boolean;
-  setUser: (user: User | null) => void;
+  setUser: (user: User["props"] | null) => void;
   logout: () => void;
 }
 

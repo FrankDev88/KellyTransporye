@@ -15,6 +15,6 @@ export const useTripStopsQuery = (tripId: string) => {
         enabled: !!tripId,
         retry: false,
         refetchOnWindowFocus: false,
-        refetchInterval: (query) => (query.state.error ? false : 10_000), // stop polling if there's an error
+        refetchInterval: (query) => (query.state.error ? false : 105_000), // stop polling if there's an error
     });
 };

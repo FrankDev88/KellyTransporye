@@ -26,7 +26,7 @@ export class TripException {
 export interface TripProps {
   id: string;
   templateId: string;
-  driverId: string;
+  driverId?: string | null;
   scheduledStart: Date;
   actualStart?: Date;
   actualEnd?: Date;
@@ -42,7 +42,7 @@ export class Trip {
 
   get id(): string { return this.props.id; }
   get templateId(): string { return this.props.templateId; }
-  get driverId(): string { return this.props.driverId; }
+  get driverId(): string | undefined | null { return this.props.driverId; }
   get scheduledStart(): Date { return this.props.scheduledStart; }
   get actualStart(): Date | undefined { return this.props.actualStart; }
   get actualEnd(): Date | undefined { return this.props.actualEnd; }

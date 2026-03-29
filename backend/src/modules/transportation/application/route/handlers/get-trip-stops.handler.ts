@@ -33,6 +33,8 @@ export class GetTripStopsHandler implements IQueryHandler<GetTripStopsQuery, Res
           id: stop.id,
           childId: stop.childId,
           childName: child ? child.fullName : 'Desconocido',
+          childPhotoUrl: child ? child.photoUrl : undefined,
+          homeAddress: child ? child.homeAddress : 'Dirección no disponible',
           stopOrder: stop.stopOrder,
           isSkipped: !!exception,
           skipReason: exception ? exception.reason : null,

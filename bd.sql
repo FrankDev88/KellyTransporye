@@ -63,6 +63,7 @@ CREATE TABLE route_templates (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name TEXT NOT NULL,
     type route_type NOT NULL,
+    default_driver UUID REFERENCES users(id), -- Conductor asignado por defecto
     estimated_duration INTERVAL,
     created_at TIMESTAMPTZ DEFAULT NOW()
 );

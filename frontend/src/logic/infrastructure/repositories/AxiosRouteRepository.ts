@@ -13,6 +13,15 @@ import type {
 import { api } from '../api/axios';
 
 export class AxiosRouteRepository implements RouteRepository {
+    async getTemplates(): Promise<Result<any[]>> {
+        try {
+            const response = await api.get<{ data: any[] }>('/transportation/route/templates');
+            return Result.ok(response.data.data);
+        } catch (error: any) {
+            return Result.fail(error.response?.data?.message || 'Error al obtener las plantillas');
+        }
+    }
+
     async getTrips(): Promise<Result<Trip[]>> {
         try {
             const response = await api.get<{ data: Trip[] }>('/transportation/route/trips');

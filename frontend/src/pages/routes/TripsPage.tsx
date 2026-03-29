@@ -32,6 +32,14 @@ import {
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import {
   PlusIcon,
   SearchIcon,
   Loader2,
@@ -44,7 +52,9 @@ import { useTripsQuery } from "@/logic/application/queries/useTripsQuery"
 import { useCreateTripMutation } from "@/logic/application/queries/mutations/useCreateTripMutation"
 import { useStartTripMutation } from "@/logic/application/queries/mutations/useStartTripMutation"
 import { useGenerateDailyTripsMutation } from "@/logic/application/queries/mutations/useGenerateDailyTripsMutation"
-import { useForm } from "react-hook-form"
+import { useRouteTemplatesQuery } from "@/logic/application/queries/useRouteTemplatesQuery"
+import { useUsersQuery } from "@/logic/application/queries/useUsersQuery"
+import { useForm, Controller } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import {
   createTripSchema,
@@ -61,35 +71,90 @@ import {
   FieldLabel,
 } from "@/components/ui/field"
 
+// Helper format date
+const formatDate = (dateString?: string) => {
+  if (!dateString) return "—";
+  return new Date(dateString).toLocaleDateString("es-MX", { timeZone: "UTC" });
+}
+
 // ——————————————————————————————————————
 // Create Trip Form
 // ——————————————————————————————————————
 function CreateTripForm({ onSuccess }: { onSuccess: () => void }) {
   const { mutate: createTrip, isPending } = useCreateTripMutation()
-  const { register, handleSubmit, reset, formState: { errors } } = useForm<CreateTripData>({
+  const { data: templates } = useRouteTemplatesQuery()
+  const { data: users } = useUsersQuery()
+  
+  const drivers = users?.filter(u => u.props.role === 'DRIVER') ?? []
+
+  const { register, control, handleSubmit, reset, formState: { errors } } = useForm<CreateTripData>({
     resolver: zodResolver(createTripSchema),
   })
   const onSubmit = (data: CreateTripData) => {
-    createTrip(data, { onSuccess: (r: any) => { if (r.isSuccess) { reset(); onSuccess() } } })
+    const payload = { ...data };
+    if (!payload.driverId) delete payload.driverId;
+    createTrip(payload as any, { onSuccess: (r: any) => { if (r.isSuccess) { reset(); onSuccess() } } })
   }
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="py-4">
       <FieldGroup>
-        <Field>
-          <FieldLabel htmlFor="templateId">ID de Plantilla (UUID)</FieldLabel>
-          <Input id="templateId" placeholder="aaaa1111-..." {...register("templateId")} />
+        <Field data-invalid={!!errors.templateId}>
+          <FieldLabel htmlFor="templateId">Plantilla de Ruta</FieldLabel>
+          <Controller
+            name="templateId"
+            control={control}
+            render={({ field }) => (
+              <Select value={field.value} onValueChange={field.onChange}>
+                <SelectTrigger id="templateId" aria-invalid={!!errors.templateId}>
+                  <SelectValue placeholder="Selecciona una plantilla..." />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectGroup>
+                    {templates?.map((t: any) => (
+                      <SelectItem key={t.props.id} value={t.props.id}>
+                        {t.props.name}
+                      </SelectItem>
+                    ))}
+                  </SelectGroup>
+                </SelectContent>
+              </Select>
+            )}
+          />
           <FieldError errors={[errors.templateId]} />
         </Field>
-        <Field>
-          <FieldLabel htmlFor="driverId">ID del Conductor (UUID)</FieldLabel>
-          <Input id="driverId" placeholder="dddd1111-..." {...register("driverId")} />
+        
+        <Field data-invalid={!!errors.driverId}>
+          <FieldLabel htmlFor="driverId">Conductor (Opcional)</FieldLabel>
+          <Controller
+            name="driverId"
+            control={control}
+            render={({ field }) => (
+              <Select value={field.value} onValueChange={field.onChange}>
+                <SelectTrigger id="driverId" aria-invalid={!!errors.driverId}>
+                  <SelectValue placeholder="Opcional (Usa el de la plantilla)" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectGroup>
+                    <SelectItem value="">(Sin asignar)</SelectItem>
+                    {drivers.map((d: any) => (
+                      <SelectItem key={d.props.id} value={d.props.id}>
+                        {d.props.fullName}
+                      </SelectItem>
+                    ))}
+                  </SelectGroup>
+                </SelectContent>
+              </Select>
+            )}
+          />
           <FieldError errors={[errors.driverId]} />
         </Field>
-        <Field>
-          <FieldLabel htmlFor="scheduledStart">Fecha/Hora Programada (ISO 8601)</FieldLabel>
-          <Input id="scheduledStart" type="datetime-local" {...register("scheduledStart")} />
+        
+        <Field data-invalid={!!errors.scheduledStart}>
+          <FieldLabel htmlFor="scheduledStart">Fecha Programada</FieldLabel>
+          <Input id="scheduledStart" type="date" aria-invalid={!!errors.scheduledStart} {...register("scheduledStart")} />
           <FieldError errors={[errors.scheduledStart]} />
         </Field>
+        
         <Button type="submit" disabled={isPending} className="w-full">
           {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
           Crear Viaje
@@ -113,9 +178,9 @@ function GenerateDailyForm({ onSuccess }: { onSuccess: () => void }) {
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="py-4">
       <FieldGroup>
-        <Field>
-          <FieldLabel htmlFor="targetDate">Fecha Objetivo (ISO 8601)</FieldLabel>
-          <Input id="targetDate" type="datetime-local" {...register("targetDate")} />
+        <Field data-invalid={!!errors.targetDate}>
+          <FieldLabel htmlFor="targetDate">Fecha Objetivo</FieldLabel>
+          <Input id="targetDate" type="date" aria-invalid={!!errors.targetDate} {...register("targetDate")} />
           <FieldError errors={[errors.targetDate]} />
         </Field>
         <Button type="submit" disabled={isPending} className="w-full">
@@ -133,6 +198,10 @@ function GenerateDailyForm({ onSuccess }: { onSuccess: () => void }) {
 export default function TripsPage() {
   const { data: trips, isLoading } = useTripsQuery()
   const { mutate: startTrip } = useStartTripMutation()
+  const { data: users } = useUsersQuery()
+  const { data: templates } = useRouteTemplatesQuery()
+  const drivers = users?.filter(u => u.props.role === 'DRIVER') ?? []
+  
   const {
     searchQuery, setSearchQuery,
     isCreateTripOpen, setIsCreateTripOpen,
@@ -142,16 +211,29 @@ export default function TripsPage() {
   // Start trip dialog state
   const [startData, setStartData] = React.useState<StartTripData>({ tripId: "", driverId: "" })
   const [isStartOpen, setIsStartOpen] = React.useState(false)
-  const { register: regStart, handleSubmit: handleStart, reset: resetStart, formState: { errors: errStart } } =
+  const { register: regStart, control: controlStart, handleSubmit: handleStart, reset: resetStart, formState: { errors: errStart } } =
     useForm<StartTripData>({ resolver: zodResolver(startTripSchema) })
+    
+  // Update form values when startData changes
+  React.useEffect(() => {
+    if (isStartOpen) {
+      resetStart(startData)
+    }
+  }, [isStartOpen, startData, resetStart])
+
   const onStartSubmit = (data: StartTripData) => {
     startTrip(data, { onSuccess: () => { resetStart(); setIsStartOpen(false) } })
   }
 
-  const filtered = (trips ?? []).filter((t) =>
-    t.props.templateId.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    t.props.driverId.toLowerCase().includes(searchQuery.toLowerCase())
-  )
+  const filtered = (trips ?? []).filter((t) => {
+    const templateName = templates?.find(tmp => tmp.props.id === t.props.templateId)?.props.name || "";
+    const driverName = users?.find(u => u.props.id === t.props.driverId)?.props.fullName || "";
+    
+    return templateName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+           driverName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+           t.props.templateId.toLowerCase().includes(searchQuery.toLowerCase()) ||
+           (t.props.driverId?.toLowerCase().includes(searchQuery.toLowerCase()) ?? false);
+  })
 
   const getStatusBadge = (isActive: boolean, actualEnd?: string) => {
     if (actualEnd) return <Badge variant="outline" className="text-gray-500 border-gray-500/20 bg-gray-500/5">Finalizado</Badge>
@@ -238,55 +320,60 @@ export default function TripsPage() {
                 <Table>
                   <TableHeader>
                     <TableRow className="bg-muted/50">
-                      <TableHead className="font-bold">ID Plantilla</TableHead>
+                      <TableHead className="font-bold">Plantilla</TableHead>
                       <TableHead className="font-bold">Conductor</TableHead>
-                      <TableHead className="font-bold">Hora Programada</TableHead>
+                      <TableHead className="font-bold">Fecha Programada</TableHead>
                       <TableHead className="font-bold">Inicio Real</TableHead>
                       <TableHead className="font-bold text-center w-[120px]">Estado</TableHead>
                       <TableHead className="text-right w-[140px]"></TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {filtered.map((trip) => (
-                      <TableRow key={trip.props.id} className="hover:bg-muted/30 transition-colors">
-                        <TableCell className="font-mono text-xs text-muted-foreground truncate max-w-[140px]" title={trip.props.templateId}>
-                          {trip.props.templateId.slice(0, 8)}…
-                        </TableCell>
-                        <TableCell className="font-mono text-xs text-muted-foreground truncate max-w-[140px]" title={trip.props.driverId}>
-                          {trip.props.driverId.slice(0, 8)}…
-                        </TableCell>
-                        <TableCell className="text-sm">
-                          {trip.props.scheduledStart ? new Date(trip.props.scheduledStart).toLocaleString("es-MX") : "—"}
-                        </TableCell>
-                        <TableCell className="text-sm">
-                          {trip.props.actualStart ? new Date(trip.props.actualStart).toLocaleString("es-MX") : "—"}
-                        </TableCell>
-                        <TableCell className="text-center">
-                          {getStatusBadge(trip.props.isActive, trip.props.actualEnd)}
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <div className="flex justify-end gap-2">
-                            {!trip.props.isActive && !trip.props.actualEnd && (
+                    {filtered.map((trip) => {
+                      const templateName = templates?.find(t => t.props.id === trip.props.templateId)?.props.name || trip.props.templateId.slice(0, 8);
+                      const driverName = users?.find(u => u.props.id === trip.props.driverId)?.props.fullName || (trip.props.driverId ? trip.props.driverId.slice(0, 8) : "Sin asignar");
+
+                      return (
+                        <TableRow key={trip.props.id} className="hover:bg-muted/30 transition-colors">
+                          <TableCell className="font-medium truncate max-w-[200px]" title={templateName}>
+                            {templateName}
+                          </TableCell>
+                          <TableCell className="text-sm truncate max-w-[200px]" title={driverName}>
+                            {driverName}
+                          </TableCell>
+                          <TableCell className="text-sm">
+                            {formatDate(trip.props.scheduledStart)}
+                          </TableCell>
+                          <TableCell className="text-sm">
+                            {formatDate(trip.props.actualStart)}
+                          </TableCell>
+                          <TableCell className="text-center">
+                            {getStatusBadge(trip.props.isActive, trip.props.actualEnd)}
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <div className="flex justify-end gap-2">
+                              {!trip.props.isActive && !trip.props.actualEnd && (
+                                <Button
+                                  variant="outline"
+                                  size="icon"
+                                  className="h-8 w-8 bg-emerald-100 border-emerald-200 text-emerald-600 hover:bg-emerald-200 dark:bg-emerald-500/10 dark:border-emerald-500/20 dark:text-emerald-400"
+                                  onClick={() => { setStartData({ tripId: trip.props.id, driverId: trip.props.driverId }); setIsStartOpen(true) }}
+                                >
+                                  <PlayCircleIcon className="h-4 w-4" />
+                                </Button>
+                              )}
                               <Button
                                 variant="outline"
                                 size="icon"
-                                className="h-8 w-8 bg-emerald-100 border-emerald-200 text-emerald-600 hover:bg-emerald-200 dark:bg-emerald-500/10 dark:border-emerald-500/20 dark:text-emerald-400"
-                                onClick={() => { setStartData({ tripId: trip.props.id, driverId: trip.props.driverId }); setIsStartOpen(true) }}
+                                className="h-8 w-8 bg-blue-100 border-blue-200 text-blue-600 hover:bg-blue-200 dark:bg-blue-500/10 dark:border-blue-500/20 dark:text-blue-400"
                               >
-                                <PlayCircleIcon className="h-4 w-4" />
+                                <ListOrderedIcon className="h-4 w-4" />
                               </Button>
-                            )}
-                            <Button
-                              variant="outline"
-                              size="icon"
-                              className="h-8 w-8 bg-blue-100 border-blue-200 text-blue-600 hover:bg-blue-200 dark:bg-blue-500/10 dark:border-blue-500/20 dark:text-blue-400"
-                            >
-                              <ListOrderedIcon className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))}
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
                     {filtered.length === 0 && (
                       <TableRow>
                         <TableCell colSpan={6} className="h-24 text-center text-muted-foreground">
@@ -310,14 +397,33 @@ export default function TripsPage() {
             </DialogHeader>
             <form onSubmit={handleStart(onStartSubmit)} className="py-4">
               <FieldGroup>
-                <Field>
+                <Field data-invalid={!!errStart.tripId}>
                   <FieldLabel htmlFor="startTripId">ID del Viaje</FieldLabel>
-                  <Input id="startTripId" defaultValue={startData.tripId} {...regStart("tripId")} />
+                  <Input id="startTripId" aria-invalid={!!errStart.tripId} {...regStart("tripId")} />
                   <FieldError errors={[errStart.tripId]} />
                 </Field>
-                <Field>
-                  <FieldLabel htmlFor="startDriverId">ID del Conductor</FieldLabel>
-                  <Input id="startDriverId" defaultValue={startData.driverId} {...regStart("driverId")} />
+                <Field data-invalid={!!errStart.driverId}>
+                  <FieldLabel htmlFor="startDriverId">Conductor</FieldLabel>
+                  <Controller
+                    name="driverId"
+                    control={controlStart}
+                    render={({ field }) => (
+                      <Select value={field.value} onValueChange={field.onChange}>
+                        <SelectTrigger id="startDriverId" aria-invalid={!!errStart.driverId}>
+                          <SelectValue placeholder="Selecciona el conductor..." />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectGroup>
+                            {drivers.map((d: any) => (
+                              <SelectItem key={d.props.id} value={d.props.id}>
+                                {d.props.fullName}
+                              </SelectItem>
+                            ))}
+                          </SelectGroup>
+                        </SelectContent>
+                      </Select>
+                    )}
+                  />
                   <FieldError errors={[errStart.driverId]} />
                 </Field>
                 <Button type="submit" className="w-full">Iniciar Viaje</Button>

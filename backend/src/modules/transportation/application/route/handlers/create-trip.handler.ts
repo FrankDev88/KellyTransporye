@@ -24,11 +24,17 @@ export class CreateTripHandler implements ICommandHandler<CreateTripCommand, Res
         return Result.fail('La plantilla de ruta especificada no existe.');
       }
 
+      const assignedDriverId = driverId || template.defaultDriverId;
+      if (!assignedDriverId) {
+        await this.uow.rollback();
+        return Result.fail('Se requiere un driverId o que la plantilla especifique un defaultDriverId.');
+      }
+
       const tripId = randomUUID();
       const trip = new Trip({
         id: tripId,
         templateId,
-        driverId,
+        driverId: assignedDriverId,
         scheduledStart: scheduledStart || new Date(),
         isActive: false,
         exceptions: [],

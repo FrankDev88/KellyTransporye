@@ -7,6 +7,7 @@ import { AxiosRouteRepository } from "./infrastructure/repositories/AxiosRouteRe
 // 2. Casos de Uso (Business Logic)
 import { LoginUseCase } from "./application/use-cases/LoginUseCase";
 import { CreateUserUseCase } from "./application/use-cases/CreateUserUseCase";
+import { GetCurrentUserUseCase } from "./application/use-cases/GetCurrentUserUseCase";
 
 // --- Composición de Dependencias ---
 
@@ -19,11 +20,13 @@ const routeRepository = new AxiosRouteRepository();
 // b. Instancias de Casos de Uso (Inyección de dependencias)
 export const loginUseCase = new LoginUseCase(authRepository);
 export const createUserUseCase = new CreateUserUseCase(userRepository);
+export const getCurrentUserUseCase = new GetCurrentUserUseCase(authRepository);
 
 // c. Objeto contenedor para el contexto
 export const dependencies = {
   loginUseCase,
   createUserUseCase,
+  getCurrentUserUseCase,
   userRepository, // Para consultas directas si fuera necesario
   childRepository,
   routeRepository,

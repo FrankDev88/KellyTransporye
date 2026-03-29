@@ -12,7 +12,7 @@ export class CreateRouteTemplateHandler implements ICommandHandler<CreateRouteTe
   ) {}
 
   async execute(command: CreateRouteTemplateCommand): Promise<Result<string>> {
-    const { name, type, estimatedDuration, childrenIds } = command;
+    const { name, type, estimatedDuration, childrenIds, defaultDriverId } = command;
 
     try {
       await this.uow.startTransaction();
@@ -33,6 +33,7 @@ export class CreateRouteTemplateHandler implements ICommandHandler<CreateRouteTe
         id: templateId,
         name: name,
         type: type as RouteType,
+        defaultDriverId: defaultDriverId,
         estimatedDuration: estimatedDuration,
         createdAt: new Date(),
         stops: stops

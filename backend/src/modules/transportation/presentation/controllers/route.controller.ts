@@ -11,11 +11,13 @@ import { StartTripCommand } from '../../application/route/commands/start-trip.co
 import { CreateRouteTemplateCommand } from '../../application/route/commands/create-route-template.command';
 import { GetTripStopsQuery } from '../../application/route/queries/get-trip-stops.query';
 import { GetAllTripsQuery } from '../../application/route/queries/get-all-trips.query';
+import { GetAllRouteTemplatesQuery } from '../../application/route/queries/get-all-route-templates.query';
 import { CreateTripCommand } from '../../application/route/commands/create-trip.command';
 import { GenerateDailyTripsCommand } from '../../application/route/commands/generate-daily-trips.command';
 
 import { Result } from '../../domain/result';
 import { Trip } from '../../domain/entities/trip.entity';
+import { RouteTemplate } from '../../domain/entities/route-template.entity';
 
 @ApiTags('Planificación y Ejecución de Rutas')
 @ApiBearerAuth('JWT-auth')
@@ -25,6 +27,19 @@ export class RouteController {
     private readonly commandBus: CommandBus,
     private readonly queryBus: QueryBus
   ) { }
+
+  @Get('templates')
+  @ApiOperation({
+    summary: 'Obtener todas las plantillas de ruta',
+    description: '🔐 **Roles Permitidos:** `ADMIN`, `DRIVER`\n\nRetorna la lista completa de plantillas de ruta.'
+  })
+  @ApiResponse({ status: 200, description: 'Lista de plantillas recuperada con éxito.' })
+  @ApiResponse({ status: 401, description: 'No autorizado: Token JWT ausente o inválido.' })
+  async getTemplates() {
+    const result: Result<RouteTemplate[]> = await this.queryBus.execute(new GetAllRouteTemplatesQuery());
+    if (result.isFailure) throw new HttpException(result.error || 'Error', HttpStatus.BAD_REQUEST);
+    return { success: true, data: result.getValue() };
+  }
 
   @Get('trips')
   @ApiOperation({
@@ -54,7 +69,8 @@ export class RouteController {
         dto.name,
         dto.type,
         dto.estimatedDuration,
-        dto.childrenIds
+        dto.childrenIds,
+        dto.defaultDriverId
       )
     );
     if (result.isFailure) throw new HttpException(result.error || 'Error', HttpStatus.BAD_REQUEST);

@@ -15,6 +15,7 @@ export class RouteTemplateMapper {
       id: raw.id,
       name: raw.name,
       type: raw.type as RouteType,
+      defaultDriverId: raw.defaultDriverId ?? undefined,
       estimatedDuration: raw.estimatedDuration,
       createdAt: raw.createdAt,
       stops: stops,
@@ -33,6 +34,7 @@ export class RouteTemplateMapper {
       id: template.id,
       name: template.name,
       type: template.type,
+      defaultDriverId: template.defaultDriverId || null,
       stops: stops as any,
     };
   }

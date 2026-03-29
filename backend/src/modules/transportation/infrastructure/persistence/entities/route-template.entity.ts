@@ -13,6 +13,9 @@ export class TypeOrmRouteTemplateEntity {
   @Column({ type: 'enum', enum: RouteType })
   type: RouteType;
 
+  @Column({ name: 'default_driver', type: 'uuid', nullable: true })
+  defaultDriverId: string | null;
+
   @Column({ name: 'estimated_duration', type: 'interval', nullable: true })
   estimatedDuration: string;
 

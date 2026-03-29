@@ -8,11 +8,22 @@ import ChildrenPage from "@/pages/children/ChildrenPage";
 import RoutesPage from "@/pages/routes/RoutesPage";
 import TripsPage from "@/pages/routes/TripsPage";
 import DriverPage from "@/pages/driver/DriverPage";
+import { useAuth } from "@/hooks/useAuth";
 import "./App.css";
 
 const queryClient = new QueryClient();
 
 function App() {
+  const { isInitializing } = useAuth();
+
+  if (isInitializing) {
+    return (
+      <div className="flex h-screen items-center justify-center bg-background">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+      </div>
+    );
+  }
+
   return (
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>

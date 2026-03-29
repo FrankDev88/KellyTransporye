@@ -38,7 +38,7 @@ export class TripMapper {
     return {
       id: trip.id,
       templateId: trip.templateId,
-      driverId: trip.driverId,
+      driverId: trip.driverId || null,
       scheduledStart: trip.scheduledStart,
       actualStart: trip.actualStart,
       actualEnd: trip.actualEnd,

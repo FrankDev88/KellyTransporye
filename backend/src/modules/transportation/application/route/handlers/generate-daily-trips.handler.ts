@@ -25,21 +25,14 @@ export class GenerateDailyTripsHandler implements ICommandHandler<GenerateDailyT
         // En una implementación real más compleja, se podría validar si ya existe 
         // un viaje para esa plantilla en ese mismo día para no duplicar.
         
-        // Asignamos un driver genérico o requerimos que se asigne luego.
-        // Para este caso usaremos un ID nulo o un UUID temporal (idealmente debería venir en el template
-        // o asignarse en la interfaz posteriormente, pero el modelo requiere un UUID en base de datos.
-        // Simularemos que el driver se asignará, y pondremos un UUID de sistema o se deja pendiente 
-        // según el diseño de la tabla (si driverId acepta nulos).
-        // En el esquema actual, el driverId no acepta nulls, por ende, este handler masivo 
-        // puede necesitar recibir mapeos o utilizar un conductor por defecto, 
-        // o mejor aún, si DriverId es un UUID válido.
-        
-        const dummyDriverId = randomUUID(); // Reemplazar con lógica de asignación real si existe
+        // Si la plantilla tiene un conductor por defecto, se lo asignamos.
+        // Si no, lo dejamos nulo para que sea asignado posteriormente.
+        const driverIdToUse = template.defaultDriverId || null;
 
         const trip = new Trip({
           id: randomUUID(),
           templateId: template.id,
-          driverId: dummyDriverId, // Debería ser asignable luego
+          driverId: driverIdToUse,
           scheduledStart: targetDate,
           isActive: false,
           exceptions: [],

@@ -120,13 +120,13 @@ function StopItem({ stop, onCheckOut }: { stop: TripStop; onCheckOut: (stop: Tri
                 {stop.stopOrder}
             </span>
             <Avatar className="size-9 shrink-0">
-                <AvatarImage src={stop.childPhotoUrl} alt={stop.childFirstName} />
+                <AvatarImage src={stop.childPhotoUrl} alt={stop.childName} />
                 <AvatarFallback className="text-xs">
-                    {stop.childFirstName?.[0]}{stop.childLastName?.[0]}
+                    {stop.childName?.[0]}
                 </AvatarFallback>
             </Avatar>
             <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-medium">{stop.childFirstName} {stop.childLastName}</p>
+                <p className="truncate text-sm font-medium">{stop.childName}</p>
                 <p className="truncate text-xs text-muted-foreground">{stop.homeAddress}</p>
             </div>
             <div className="flex shrink-0 flex-col items-end gap-1.5">
@@ -187,7 +187,7 @@ function RouteMap({ stops }: { stops: TripStop[] }) {
                 >
                     <Popup>
                         <div className="text-sm">
-                            <p className="font-semibold">{stop.stopOrder}. {stop.childFirstName} {stop.childLastName}</p>
+                            <p className="font-semibold">{stop.stopOrder}. {stop.childName}</p>
                             <p className="text-muted-foreground">{stop.homeAddress}</p>
                             <StatusBadge status={stop.status} />
                         </div>
@@ -249,7 +249,7 @@ function QrScannerPanel({ tripId, onManualCheckIn, onManualCheckOut }: {
                                     { 
                                         tripId, 
                                         qrIdentifier: decodedText,
-                                        driverId: user?.props.id || '',
+                                        driverId: user?.id || '',
                                         latitude: pos.coords.latitude,
                                         longitude: pos.coords.longitude
                                     },
@@ -380,7 +380,7 @@ function ManualCheckInDialog({
                         reason: reason as 'LOSS' | 'DAMAGE' | 'FORGOTTEN',
                         latitude: pos.coords.latitude,
                         longitude: pos.coords.longitude,
-                        driverId: user?.props.id || '',
+                        driverId: user?.id || '',
                     },
                     {
                         onSuccess: (r) => {
@@ -426,7 +426,7 @@ function ManualCheckInDialog({
                                     <SelectItem key={s.childId} value={s.childId}>
                                         <div className="flex items-center gap-2">
                                             <UserIcon className="size-3.5 text-muted-foreground" />
-                                            {s.stopOrder}. {s.childFirstName} {s.childLastName}
+                                            {s.stopOrder}. {s.childName}
                                         </div>
                                     </SelectItem>
                                 ))}
@@ -440,13 +440,13 @@ function ManualCheckInDialog({
                         return child ? (
                             <div className="flex items-center gap-4 rounded-lg border bg-muted/30 p-3">
                                 <Avatar className="size-16 rounded-lg">
-                                    <AvatarImage src={child.childPhotoUrl} alt={child.childFirstName} className="object-cover" />
+                                    <AvatarImage src={child.childPhotoUrl} alt={child.childName} className="object-cover" />
                                     <AvatarFallback className="rounded-lg text-xl">
-                                        {child.childFirstName?.[0]}{child.childLastName?.[0]}
+                                        {child.childName?.[0]}
                                     </AvatarFallback>
                                 </Avatar>
                                 <div>
-                                    <p className="font-semibold">{child.childFirstName} {child.childLastName}</p>
+                                    <p className="font-semibold">{child.childName}</p>
                                     <p className="text-xs text-muted-foreground">{child.homeAddress}</p>
                                     <Badge variant="outline" className="mt-1 text-xs text-amber-600 border-amber-500/25 bg-amber-500/10">
                                         Validar identidad visualmente
@@ -520,7 +520,7 @@ function ManualCheckOutDialog({
                         childId,
                         latitude: pos.coords.latitude,
                         longitude: pos.coords.longitude,
-                        driverId: user?.props.id || ''
+                        driverId: user?.id || ''
                     },
                     {
                         onSuccess: (r) => {
@@ -565,7 +565,7 @@ function ManualCheckOutDialog({
                                     <SelectItem key={s.childId} value={s.childId}>
                                         <div className="flex items-center gap-2">
                                             <BusIcon className="size-3.5 text-blue-500" />
-                                            {s.stopOrder}. {s.childFirstName} {s.childLastName}
+                                            {s.stopOrder}. {s.childName}
                                         </div>
                                     </SelectItem>
                                 ))}
@@ -578,13 +578,13 @@ function ManualCheckOutDialog({
                         return child ? (
                             <div className="flex items-center gap-4 rounded-lg border bg-muted/30 p-3">
                                 <Avatar className="size-16 rounded-lg">
-                                    <AvatarImage src={child.childPhotoUrl} alt={child.childFirstName} className="object-cover" />
+                                    <AvatarImage src={child.childPhotoUrl} alt={child.childName} className="object-cover" />
                                     <AvatarFallback className="rounded-lg text-xl">
-                                        {child.childFirstName?.[0]}{child.childLastName?.[0]}
+                                        {child.childName?.[0]}
                                     </AvatarFallback>
                                 </Avatar>
                                 <div>
-                                    <p className="font-semibold">{child.childFirstName} {child.childLastName}</p>
+                                    <p className="font-semibold">{child.childName}</p>
                                     <p className="text-xs text-muted-foreground">{child.homeAddress}</p>
                                     <StatusBadge status="ON_BOARD" />
                                 </div>
@@ -620,14 +620,13 @@ export default function DriverPage() {
 
     // Fetch all trips specifically to resolve tripId if absent or invalid
     const { data: allTrips = [], isLoading: loadingTrips } = useTripsQuery();
-
     const activeTripId = React.useMemo(() => {
-        const active = allTrips.find(t => t.props.isActive && t.props.driverId === user?.props.id);
+        if (!user) return undefined;
+        const active = allTrips.find(t => t.props.isActive && t.props.driverId === user.id);
         return active?.props.id;
     }, [allTrips, user]);
-
     React.useEffect(() => {
-        if (loadingTrips || !user?.props.id) return;
+        if (loadingTrips || !user || !user || !user.id) return;
 
         if (activeTripId && tripId !== activeTripId) {
              // Redirect to the assigned active trip
@@ -646,7 +645,6 @@ export default function DriverPage() {
     const onBoardStops = stops.filter((s) => s.status === 'ON_BOARD');
     const completedCount = stops.filter((s) => s.status === 'COMPLETED').length;
     const absentCount = stops.filter((s) => s.status === 'ABSENCE_CONFIRMED').length;
-
     if (loadingTrips) {
         return (
             <div className="flex h-screen items-center justify-center bg-background">

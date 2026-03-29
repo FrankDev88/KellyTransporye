@@ -23,6 +23,7 @@ export interface RouteTemplateProps {
   id: string;
   name: string;
   type: RouteType;
+  defaultDriverId?: string;
   estimatedDuration?: string; // e.g. interval representation or just string for now
   createdAt: Date;
   stops: RouteTemplateStop[];
@@ -37,5 +38,6 @@ export class RouteTemplate {
   get id(): string { return this.props.id; }
   get name(): string { return this.props.name; }
   get type(): RouteType { return this.props.type; }
+  get defaultDriverId(): string | undefined { return this.props.defaultDriverId; }
   get stops(): RouteTemplateStop[] { return [...this.props.stops].sort((a, b) => a.stopOrder - b.stopOrder); }
 }

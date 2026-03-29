@@ -5,6 +5,7 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 export const CreateRouteTemplateSchema = z.object({
   name: z.string().min(3),
   type: z.enum(['HOME_TO_SCHOOL', 'SCHOOL_TO_HOME']),
+  defaultDriverId: z.string().uuid().optional(),
   estimatedDuration: z.string().optional(),
   childrenIds: z.array(z.string().uuid()),
 });
@@ -29,6 +30,13 @@ export class CreateRouteTemplateDto extends createZodDto(CreateRouteTemplateSche
     description: 'Duración estimada del trayecto (formato de intervalo aceptado por PostgreSQL).' 
   })
   estimatedDuration?: string;
+
+  @ApiPropertyOptional({ 
+    example: 'dddd1111-1111-1111-1111-111111111111', 
+    description: 'ID de conductor por defecto. Se usará al crear un viaje si no se asigna uno.',
+    format: 'uuid'
+  })
+  defaultDriverId?: string;
 
   @ApiProperty({ 
     example: ['cccc1111-1111-1111-1111-111111111111', 'cccc2222-2222-2222-2222-222222222222'], 

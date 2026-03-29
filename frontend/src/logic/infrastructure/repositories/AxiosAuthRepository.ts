@@ -17,6 +17,7 @@ export class AxiosAuthRepository implements AuthRepository {
 
       if (token) {
         localStorage.setItem("auth_token", token);
+        localStorage.setItem("auth_user", JSON.stringify(user));
       }
 
       return Result.ok(user);
@@ -28,17 +29,20 @@ export class AxiosAuthRepository implements AuthRepository {
 
   async logout(): Promise<void> {
     localStorage.removeItem("auth_token");
+    localStorage.removeItem("auth_user");
   }
 
   async getCurrentUser(): Promise<User | null> {
     const token = localStorage.getItem("auth_token");
-    if (!token) return null;
+    const userStr = localStorage.getItem("auth_user");
+    
+    if (!token || !userStr) return null;
 
     try {
-      const response = await api.get<{ data: User }>("/auth/me");
-      return response.data.data;
+      return JSON.parse(userStr);
     } catch {
       localStorage.removeItem("auth_token");
+      localStorage.removeItem("auth_user");
       return null;
     }
   }
